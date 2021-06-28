@@ -23,6 +23,7 @@ use BoringSearch\Core\Query\QueryInterface;
 use BoringSearch\Core\Query\Result\QueryResult;
 use BoringSearch\Core\Query\Result\QueryResultInterface;
 use BoringSearch\Core\Query\Result\Result;
+use BoringSearch\Core\Query\Result\ResultCollection;
 use BoringSearch\Doctrine\Adapter\Doctrine;
 use Doctrine\DBAL\Connection;
 
@@ -59,7 +60,7 @@ class Index extends AbstractIndex
             $results[] = new Result($this->createDocumentFromRow($row, $query->getAttributeNamesToRetrieve()));
         }
 
-        return new QueryResult($query, $results, \count($results), false);
+        return new QueryResult($query, new ResultCollection($results), \count($results), false);
     }
 
     public function findByIdentifier(string $identifier): ?DocumentInterface
@@ -79,7 +80,7 @@ class Index extends AbstractIndex
     public function doDelete(array $identifiers): ResultInterface
     {
         $stmt = $this->connection->prepare('DELETE FROM search_index WHERE index_name=:index AND id IN (:ids)');
-        $stmt->execute([
+        $stmt->executeQuery([
             'index' => $this->getName(),
             'ids' => implode(',', $identifiers),
         ]);
