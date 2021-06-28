@@ -20,6 +20,7 @@ use BoringSearch\Core\Index\AbstractIndex;
 use BoringSearch\Core\Index\Result\ResultInterface;
 use BoringSearch\Core\Index\Result\SynchronousResult;
 use BoringSearch\Core\Query\QueryInterface;
+use BoringSearch\Core\Query\Result\HighlightCollection;
 use BoringSearch\Core\Query\Result\QueryResult;
 use BoringSearch\Core\Query\Result\QueryResultInterface;
 use BoringSearch\Core\Query\Result\Result;
@@ -57,7 +58,10 @@ class Index extends AbstractIndex
         $results = [];
 
         foreach ($db->fetchAllAssociative() as $row) {
-            $results[] = new Result($this->createDocumentFromRow($row, $query->getAttributeNamesToRetrieve()));
+            $document = $this->createDocumentFromRow($row, $query->getAttributeNamesToRetrieve());
+            $highlights = HighlightCollection::createFromQueryAndDocument($query, $document);
+
+            $results[] = new Result($document, $highlights);
         }
 
         return new QueryResult($query, new ResultCollection($results), \count($results), false);
