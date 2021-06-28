@@ -39,7 +39,7 @@ class Index extends AbstractIndex
 
     public function query(QueryInterface $query): QueryResultInterface
     {
-        $results = $this->connection->createQueryBuilder()
+        $db = $this->connection->createQueryBuilder()
             ->select('*')
             ->from('search_index')
             ->where('index_name=:index')
@@ -50,30 +50,30 @@ class Index extends AbstractIndex
             ])
             ->setFirstResult($query->getOffset())
             ->setMaxResults($query->getLimit())
-            ->execute()
+            ->executeQuery()
         ;
 
-        $matches = [];
+        $results = [];
 
-        foreach ($results->fetchAllAssociative() as $row) {
-            $matches[] = new Result($this->createDocumentFromRow($row, $query->getAttributeNamesToRetrieve()));
+        foreach ($db->fetchAllAssociative() as $row) {
+            $results[] = new Result($this->createDocumentFromRow($row, $query->getAttributeNamesToRetrieve()));
         }
 
-        return new QueryResult($query, $matches, \count($matches), false);
+        return new QueryResult($query, $results, \count($results), false);
     }
 
     public function findByIdentifier(string $identifier): ?DocumentInterface
     {
-        $result = $this->connection->fetchAssociative('SELECT * FROM search_index WHERE index_name=:index AND id=:id', [
+        $db = $this->connection->fetchAssociative('SELECT * FROM search_index WHERE index_name=:index AND id=:id', [
             'index' => $this->getName(),
             'id' => $identifier,
         ]);
 
-        if (false === $result) {
+        if (false === $db) {
             return null;
         }
 
-        return $this->createDocumentFromRow($result);
+        return $this->createDocumentFromRow($db);
     }
 
     public function doDelete(array $identifiers): ResultInterface
