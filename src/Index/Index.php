@@ -57,7 +57,7 @@ class Index extends AbstractIndex
 
         $results = [];
 
-        foreach ($db->fetchAllAssociative() as $row) {
+        foreach ($db->iterateAssociative() as $row) {
             $document = $this->createDocumentFromRow($row, $query->getAttributeNamesToRetrieve());
             $highlights = HighlightCollection::createFromQueryAndDocument($query, $document);
 
